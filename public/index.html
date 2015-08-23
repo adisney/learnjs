@@ -5,14 +5,43 @@
     <link rel="stylesheet" href="/bootstrap-3.3.2/css/bootstrap.css">
     <script src="/vendor.js"></script>
     <script src="/app.js"></script>
-  </head>
-  <body>
-    <div class="container">
-      <h1>It works!</h1>
-      <div>
-        <span>You're ready to start!</span>
-        <span>Bootstrap 3 and minified jQuery 2 are included.</span>
+    </head>
+    <body>
+    <div class='markup'>
+      <div class="view-container container">
+        <div class='landing-view'>
+          <div class="jumbotron">
+            <h1>Learn JavaScript</h1>
+            <p>...one puzzle at a time.</p>
+            <p>
+            <a class="btn btn-primary btn-lg" href="#problem-1" role="button">Start now!</a>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class='templates'>
+        <div class='problem-view'>
+          <h3 class='title'></h3>
+          <p class='description'></p>
+          <pre class='code'></pre>
+          <form>
+            <textarea class='answer'></textarea>
+            <div>
+              <button class='btn btn-primary check-btn'>Check Answer</button>
+              <p class='result'></p>
+            </div>
+          </form>
+        </div>
+        <div class='correct-flash'>
+          <span>Correct!</span> <a>Next Problem</a> 
+        </div>
       </div>
     </div>
+    <script type='text/javascript'>
+      $(window).ready(learnjs.appOnReady);
+    </script>
+    <style type='text/css'>
+      .templates {display: none;}
+    </style>
   </body>
 </html>
