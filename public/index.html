@@ -1,14 +1,40 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
     <title>Learn JS!</title>
-    <link rel="stylesheet" href="/bootstrap-3.3.2/css/bootstrap.css">
+    <link rel="stylesheet" href="/bootstrap-3.3.2/css/bootstrap.min.css">
     <script src="/vendor.js"></script>
     <script src="/app.js"></script>
     </head>
     <body>
     <div class='markup'>
+      <nav class="navbar navbar-default navbar-fixed-top">
+        <div class="container">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed"
+              data-toggle="collapse" data-target="#navbar">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">Learn JS</a>
+          </div>
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+              <li><a href="#problem-1">Start</a></li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+
       <div class="view-container container">
+        <noscript>
+          <h3>JavaScript is disabled!</h3>
+          <p>JavaScript is required. Please enable it and reload</p>
+        </noscript>
+      </div>
+      <div class='templates'>
         <div class='landing-view'>
           <div class="jumbotron">
             <h1>Learn JavaScript</h1>
@@ -18,19 +44,31 @@
             </p>
           </div>
         </div>
-      </div>
-      <div class='templates'>
         <div class='problem-view'>
-          <h3 class='title'></h3>
-          <p class='description'></p>
-          <pre class='code'></pre>
-          <form>
-            <textarea class='answer'></textarea>
-            <div>
-              <button class='btn btn-primary check-btn'>Check Answer</button>
-              <p class='result'></p>
+          <div class='row'>
+            <div class='col-md-12'>
+              <h3 class='title'></h3>
+              <p class='description'></p>
             </div>
-          </form>
+          </div>
+          <div class='row'>
+            <form>
+              <div class='form-group col-md-6'>
+                <label>Fill in the Blank</label>
+                <pre class='code'></pre>
+              </div>
+              <div class="form-group col-md-6">
+                <label>Your Answer</label>
+                <textarea class='answer form-control fixed-width-text'></textarea>
+              </div>
+              <div class='col-md-2 col-md-offset-10'>
+                <div class='clearfix'>
+                  <button class="btn btn-primary check-btn pull-right">Check Answer</button>
+                </div>
+                <p class='result text-right'></p>
+              </div>
+            </form>
+          </div>
         </div>
         <div class='correct-flash'>
           <span>Correct!</span> <a>Next Problem</a> 
@@ -42,6 +80,11 @@
     </script>
     <style type='text/css'>
       .templates {display: none;}
+      .fixed-width-text {
+        font-family: "Lucida Sans Typewriter","Lucida Console",monaco,monospace;
+      }
+      body { padding-top: 70px; }
+      .resize-vertical { resize: vertical; }
     </style>
   </body>
 </html>

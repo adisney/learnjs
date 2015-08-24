@@ -62,6 +62,26 @@ describe('LearnJS', function() {
       expect(flash.find('a').text()).toEqual("You're Finished!");
     });
 
+    describe('when the answer is larger than the text area', function() {
+      var answer;
+      beforeEach(function() {
+        answer = view.find('.answer');
+        spyOn(learnjs, 'scrolling').and.returnValue(true);
+      });
+
+      xit('expands automatically when the user cannot resize', function() {
+        spyOn(learnjs, 'canResize').and.returnValue(false);
+        answer.keyup();
+        expect(answer.attr('rows')).toEqual('5');
+      });
+
+      xit('does not expand when the user can resize themselves', function() {
+        spyOn(learnjs, 'canResize').and.returnValue(true);
+        answer.keyup();
+        expect(answer.attr('rows')).toEqual('4');
+      });
+    });
+
     describe('answer section', function() {
       var resultFlash;
 
@@ -73,13 +93,25 @@ describe('LearnJS', function() {
       it('can check a correct answer by hitting a button', function() {
         view.find('.answer').val("true");
         view.find('.check-btn').click();
-        expect(learnjs.flashElement);
+        expect(learnjs.flashElement).toHaveBeenCalled();
       });
 
       it('rejects an incorrect answer', function() {
         view.find('.answer').val("false");
         view.find('.check-btn').click();
         expect(learnjs.flashElement).toHaveBeenCalledWith(resultFlash, 'Incorrect!');
+      });
+
+      it('has a polyfill for the vibrate API', function() {
+        expect(window.navigator.vibrate).toBeDefined();
+      });
+
+      it('vibrates the device when the answer is wrong', function() {
+        spyOn(navigator, 'vibrate');
+        view.find('.answer').val('false');
+        view.find('.check-btn').click();
+        expect(navigator.vibrate).toHaveBeenCalledWith(200);
+        expect().toEqual();
       });
 
       describe('when the answer is correct', function() {

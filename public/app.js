@@ -30,6 +30,10 @@ learnjs.template = function(name) {
   return $('.templates .' + name).clone();
 }
 
+learnjs.landingView = function() {
+  return learnjs.template('landing-view');
+}
+
 learnjs.buildCorrectFlash = function(problemNum) {
   var correctFlash = learnjs.template('correct-flash');
   var link = correctFlash.find('a');
@@ -60,9 +64,17 @@ learnjs.problemView = function(data) {
       learnjs.flashElement(resultFlash, flashContent);
     } else {
       learnjs.flashElement(resultFlash, 'Incorrect!');
+      navigator.vibrate(200);
     }
     return false;
   }
+  function resizeArea() {
+    console.log("thing");
+    if (!learnjs.canResize() && learnjs.scrolling(view.find('.answer'))) {
+      answer.attr('rows', parseInt(answer.attr('rows'), 10) + 1);
+    }
+  }
+  $('.answer').keyup(resizeArea);
 
   view.find('.check-btn').click(checkAnswerClick);
   view.find('.title').text('Problem #' + problemNumber);
@@ -72,7 +84,8 @@ learnjs.problemView = function(data) {
 
 learnjs.showView = function(hash) {
   var routes = {
-    "#problem": learnjs.problemView 
+    "#problem": learnjs.problemView,
+    '': learnjs.landingView
   };
   var hashParts = hash.split('-');
   var viewFn = routes[hashParts[0]]
@@ -88,3 +101,18 @@ learnjs.appOnReady = function() {
   }
   learnjs.showView(window.location.hash);
 };
+
+learnjs.canResize = function() {
+  return 'resize' in document.body.style;
+}
+
+learnjs.scrolling = function(elem) {
+  return elem.clientHeight < elem.scrollHeight;
+}
+
+
+navigator.vibrate = navigator.vibrate ||
+  navigator.webkitVibrate ||
+  navigator.mozVibrate ||
+  navigator.msVibrate ||
+  function () { return false; };
