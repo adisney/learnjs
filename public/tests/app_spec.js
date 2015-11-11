@@ -1,4 +1,45 @@
 describe('LearnJS', function() {
+  var fakeCreds;
+  beforeEach(function() {
+    fakeCreds = jasmine.createSpyObj('creds', ['get']);
+    fakeCreds.get.and.callFake(function(callback) { callback() });
+    spyOn(AWS, 'CognitoIdentityCredentials').and.returnValue(fakeCreds);
+  });
+
+  it('fetches AWS credentials when starting the app', function() {
+    learnjs.appOnReady();
+    expect(AWS.config.region).toEqual('us-east-1');
+    expect(fakeCreds.get).toHaveBeenCalled();
+  });
+
+  describe('googleSignIn callback', function() {
+    var user, profile;
+    beforeEach(function() {
+      spyOn(AWS.config, 'update');
+      spyOn(learnjs, 'showView');
+      profile = jasmine.createSpyObj('profile', ['getEmail']);
+      user = jasmine.createSpyObj('user', ['getAuthResponse', 'getBasicProfile']);
+      user.getAuthResponse.and.returnValue({id_token: "BEEFFACE"});
+      user.getBasicProfile.and.returnValue(profile);
+    });
+
+    it('updates the AWS credentials', function() {
+      googleSignIn(user);
+      expect(AWS.config.credentials).toEqual(fakeCreds);
+      expect(AWS.config.credentials.get).toHaveBeenCalled();
+    });
+    
+    it('redraws the view', function() {
+      expect(learnjs.showView).toHaveBeenCalledWith(window.location.hash);
+    });
+
+    it('saves the user profile', function() {
+      delete learnjs.profile;
+      googleSignIn(user);
+      expect(learnjs.profile).toEqual(profile);
+    });
+  });
+
   it('can show a problem view', function() {
     learnjs.showView('#problem-1');
     expect($('.view-container .problem-view').length).toEqual(1);
