@@ -1,7 +1,7 @@
 "use strict"
 
 var learnjs = {
-  poolId: "us-east-1:44f1958c-fff5-4554-beb8-dd2af1ecdb2d"
+  poolId: "us-east-1:d7d4d605-9b5c-4ed4-955e-4098131513e6"
 };
 learnjs.identity = new $.Deferred();
 
@@ -73,6 +73,7 @@ learnjs.problemView = function(data) {
     if (checkAnswer()) {
       var flashContent = learnjs.buildCorrectFlash(problemNumber);
       learnjs.flashElement(resultFlash, flashContent);
+      learnjs.saveAnswer(problemNumber, view.find('.answer').val());
     } else {
       learnjs.flashElement(resultFlash, 'Incorrect!');
       navigator.vibrate(200);
@@ -80,12 +81,17 @@ learnjs.problemView = function(data) {
     return false;
   }
   function resizeArea() {
-    console.log("thing");
-    if (!learnjs.canResize() && learnjs.scrolling(view.find('.answer'))) {
+    var answer = view.find('.answer');
+    if (!learnjs.canResize() && learnjs.scrolling(answer)) {
       answer.attr('rows', parseInt(answer.attr('rows'), 10) + 1);
     }
   }
   $('.answer').keyup(resizeArea);
+  learnjs.fetchAnswer(problemNumber).then(function(data) {
+    if (data.Item) {
+      $('.answer').val(data.Item.answer);
+    }
+  });
 
   view.find('.check-btn').click(checkAnswerClick);
   view.find('.title').text('Problem #' + problemNumber);
@@ -106,8 +112,6 @@ learnjs.showView = function(hash) {
     $('.view-container').empty().append(viewFn(hashParts[1]));
   }
 };
-
-learnjs.poolId = "us-east-1:06075491-e16b-4211-aa73-88d803584c71"
 
 learnjs.appOnReady = function() {
   window.onhashchange = function() {
@@ -132,6 +136,76 @@ learnjs.canResize = function() {
 learnjs.scrolling = function(elem) {
   return elem.clientHeight < elem.scrollHeight;
 }
+
+learnjs.sendDbRequest = function(req, retry) {
+  var promise = new $.Deferred();
+  req.on('error', function(error) {
+    if (error.code === "CredentialsError") {
+      learnjs.identity.then(function(identity) {
+        return identity.refresh().then(function() {
+          return retry();
+        }, function() {
+          promise.reject(resp);
+        });
+      });
+    } else {
+      promise.reject(error);
+    }
+  });
+  req.on('success', function(resp) {
+    promise.resolve(resp.data);
+  });
+  req.send();
+  return promise;
+}
+
+learnjs.saveAnswer = function(problemId, answer) {
+  return learnjs.identity.then(function(identity) {
+    var db = new AWS.DynamoDB.DocumentClient();
+    var item = {
+      TableName: 'learnjs',
+      Item: {
+        userId: identity.id,
+        problemId: problemId,
+        answer: answer
+      }
+    };
+    return learnjs.sendDbRequest(db.put(item), function() {
+      return learnjs.saveAnswer(problemId, answer);
+    })
+  });
+};
+
+learnjs.countAnswers = function(problemId) {
+  return learnjs.identity.then(function(identity) {
+    var db = new AWS.DynamoDB.DocumentClient();
+    var params = {
+      TableName: 'learnjs',
+      Select: 'COUNT',
+      FilterExpression: 'problemId = :problemId',
+      ExpressionAttributeValues: {':problemId': problemId}
+    };
+    return learnjs.sendDbRequest(db.scan(params), function() {
+      return learnjs.countAnswers(problemId);
+    })
+  });
+}
+
+learnjs.fetchAnswer = function(problemId) {
+  return learnjs.identity.then(function(identity) {
+    var db = new AWS.DynamoDB.DocumentClient();
+    var item = {
+      TableName: 'learnjs',
+      Key: {
+        userId: identity.id,
+        problemId: problemId
+      }
+    };
+    return learnjs.sendDbRequest(db.get(item), function() {
+      return learnjs.fetchAnswer(problemId);
+    })
+  });
+};
 
 learnjs.awsRefresh = function() {
   var deferred = new $.Deferred();
