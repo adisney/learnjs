@@ -3,7 +3,7 @@
   <head>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
     <title>Learn JS!</title>
-    <link rel="stylesheet" href="/bootstrap-3.3.2/css/bootstrap.min.css">
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
     <link href='//fonts.googleapis.com/css?family=Raleway:400,300,600' rel='stylesheet' type='text/css'>
     <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/normalize/3.0.2/normalize.min.css'>
     <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css'>
@@ -13,8 +13,8 @@
     <style type="text/css" media="all">
       body { margin-top: 30px; }
     </style>
-    <script src="https://apis.google.com/js/platform.js" async defer'></script>
-    <meta content='65893363708-at6im4jrmajgh76upgh2mgur2qq0s88j.apps.googleusercontent.com' name='google-signon-client_id' />
+    <link rel="stylesheet" href="/bootstrap-3.3.2/css/bootstrap.min.css">
+    <meta name="google-signin-client_id" content="65893363708-at6im4jrmajgh76upgh2mgur2qq0s88j.apps.googleusercontent.com"/>
   </head>
   <body>
     <div class='markup'>
@@ -33,6 +33,13 @@
             <ul class="nav navbar-nav">
               <li><a href="#problem-1">Start</a></li>
             </ul>
+            <ul class="nav navbar-nav pull-right">
+              <li>
+                <span data-onsuccess='googleSignIn' class='g-signin2 signin-bar'></span>
+              </li>
+            </ul>
+          </div>
+          <div id="navbar" class="navbar-collapse collapse pull-right">
           </div>
         </div>
       </nav>
@@ -52,6 +59,10 @@
             <a class="btn btn-primary btn-lg" href="#problem-1" role="button">Start now!</a>
             </p>
           </div>
+        </div>
+        <div class='profile-view'>
+          <h3>Your Profile</h3>
+          <div class='email'></div>
         </div>
         <div class='problem-view'>
           <div class='row'>
@@ -77,6 +88,9 @@
                 <p class='result text-right'></p>
               </div>
             </form>
+          </div>
+          <div class='profile-link'>
+            <a href='#profile'></a>
           </div>
         </div>
         <div class='correct-flash'>

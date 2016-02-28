@@ -1,6 +1,9 @@
 "use strict"
 
-var learnjs = {};
+var learnjs = {
+  poolId: "us-east-1:44f1958c-fff5-4554-beb8-dd2af1ecdb2d"
+};
+learnjs.identity = new $.Deferred();
 
 learnjs.problems = [
   {
@@ -32,6 +35,14 @@ learnjs.template = function(name) {
 
 learnjs.landingView = function() {
   return learnjs.template('landing-view');
+}
+
+learnjs.profileView = function() {
+  var view = learnjs.template('profile-view');
+  learnjs.identity.done(function(identity) {
+    view.find('.email').text(identity.email);
+  });
+  return view;
 }
 
 learnjs.buildCorrectFlash = function(problemNum) {
@@ -85,6 +96,8 @@ learnjs.problemView = function(data) {
 learnjs.showView = function(hash) {
   var routes = {
     "#problem": learnjs.problemView,
+    '#profile': learnjs.profileView,
+    '#': learnjs.landingView,
     '': learnjs.landingView
   };
   var hashParts = hash.split('-');
@@ -97,13 +110,20 @@ learnjs.showView = function(hash) {
 learnjs.poolId = "us-east-1:06075491-e16b-4211-aa73-88d803584c71"
 
 learnjs.appOnReady = function() {
-  AWS.config.region = 'us-east-1';
-  AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-    // Make my id
-    IdentityPoolId: "us-east-1:06075491-e16b-4211-aa73-88d803584c71"
-  });
+  window.onhashchange = function() {
+    learnjs.showView(window.location.hash);
+  };
   learnjs.showView(window.location.hash);
+  learnjs.identity.then(function(profile) {
+    learnjs.addProfileLink(profile);
+  });
 };
+
+learnjs.addProfileLink = function(profile) {
+  var link = learnjs.template('profile-link');
+  link.find('a').text(profile.email);
+  $('.signin-bar').prepend(link);
+}
 
 learnjs.canResize = function() {
   return 'resize' in document.body.style;
@@ -113,6 +133,18 @@ learnjs.scrolling = function(elem) {
   return elem.clientHeight < elem.scrollHeight;
 }
 
+learnjs.awsRefresh = function() {
+  var deferred = new $.Deferred();
+  AWS.config.credentials.refresh(function(err) {
+    if (err) {
+      deferred.reject(err);
+    } else {
+      deferred.resolve(AWS.config.credentials.identityId);
+    }
+  });
+  return deferred.promise();
+}
+
 navigator.vibrate = navigator.vibrate ||
   navigator.webkitVibrate ||
   navigator.mozVibrate ||
@@ -120,15 +152,31 @@ navigator.vibrate = navigator.vibrate ||
   function () { return false; };
 
 function googleSignIn(googleUser) {
+  function refresh() {
+    return gapi.auth2.getAuthInstance().signIn({
+      prompt: 'login'
+    }).then(function(userUpdate) {
+      var creds = AWS.config.credentials;
+      var newToken = userUpdate.getAuthResponse().id_token;
+      creds.params.Logins['accounts.google.com'] = newToken;
+      return learnjs.awsRefresh();
+    });
+  }
   var id_token = googleUser.getAuthResponse().id_token;
-  AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-    IdentityPoolId: learnjs.poolId,
-    logins: {
-      'accounts.google.com': id_token
-    }
+  AWS.config.update({
+    region: 'us-east-1',
+    credentials: new AWS.CognitoIdentityCredentials({
+      IdentityPoolId: learnjs.poolId,
+      Logins: {
+        'accounts.google.com': id_token
+      }
+    })
   });
-  learnjs.profile = googleUser.getBasicProfile();
-  AWS.config.credentials.get(function() {
-    learnjs.showView(window.location.hash);
+  learnjs.awsRefresh().then(function(id) {
+    learnjs.identity.resolve({
+      id: id,
+      email: googleUser.getBasicProfile().getEmail(),
+      refresh: refresh
+    });
   });
 }
