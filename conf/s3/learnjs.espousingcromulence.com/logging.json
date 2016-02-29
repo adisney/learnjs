@@ -1,0 +1,10 @@
+{
+    "Bucket": "learnjs.espousingcromulence.com", 
+    "BucketLoggingStatus": {
+        "LoggingEnabled": {
+            "TargetBucket": "learnjs-logging.espousingcromulence.com", 
+            "TargetGrants": [], 
+            "TargetPrefix": ""
+        }
+    }, 
+}
